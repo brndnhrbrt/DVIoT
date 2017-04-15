@@ -1,0 +1,20 @@
+{
+  "name": "dviot",
+  "version": "1.0.0",
+  "description": "This is a cyber security training software that takes bugs found in my real work experience and trains people how to exploit them. Users will be trained to identify XSS attack vectors, as well as exploiting API logic, and sloppy programming practices.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "brndnhrbrt",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2",
+    "jsonwebtoken": "^7.3.0",
+    "mongoose": "^4.9.4",
+    "morgan": "^1.8.1",
+    "shorthash": "0.0.2"
+  }
+}

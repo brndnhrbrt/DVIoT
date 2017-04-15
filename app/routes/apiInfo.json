@@ -1,0 +1,25 @@
+/* Welcome to the IoTTech API. Here you will find a short description 
+of our API and how to interact with our endpoints. */
+
+/* / */
+{
+	"endpoint": "/",
+	"description": "This is the root endpoint to the API. Here you will find a short description of
+	our API and how to interact with out endpoints.",
+	"requiresToken": false,
+	"arguments": null
+}
+
+/* /registerUser */
+{
+	"endpoint": "/registerUser",
+	"description": "This endpoint is responible for the creaton of new users.",
+	"requiresToken": false,
+	"arguments": {
+		"username": "String",
+		"password": "String",
+		"permissionNumber": "Number"
+	}
+}
+
+
