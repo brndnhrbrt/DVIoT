@@ -183,19 +183,24 @@ angular.module('mainCtrl', [])
 
 		vm.doLogin = function() {
 			vm.processing = true;
-			Auth.login(vm.loginData.username, vm.loginData.password)
-				.success(function(data) {
-					vm.processing = false;
-					if(AuthToken.returnStorageMode()) {
-						$location.path('/private');
-					} else {
-						if(data.success) {
-							$location.path('/locations');
+			if(vm.loginData) {
+				Auth.login(vm.loginData.username, vm.loginData.password)
+					.success(function(data) {
+						vm.processing = false;
+						if(AuthToken.returnStorageMode()) {
+							$location.path('/private');
 						} else {
-							vm.error = data.message;
+							if(data.success) {
+								$location.path('/locations');
+							} else {
+								vm.error = data.message;
+							}
 						}
-					}
-				});
+					});
+			} else {
+				vm.processing = false;
+				vm.error = 'Please fill out the form to login.';
+			} 
 		};
 
 		vm.doRegister = function() {
