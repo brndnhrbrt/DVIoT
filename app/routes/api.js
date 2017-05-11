@@ -64,7 +64,7 @@ module.exports = function(app, express) {
 
 	apiRouter.post('/authenticate', function(req, res) {
 		if(req.body.username && req.body.password) {
-			User.findOne({ username: req.body.username, isActive }).select('username password').exec(function(err, user) {
+			User.findOne({ username: req.body.username, isActive: true }).select('username password').exec(function(err, user) {
 				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, user, 'User not found.');
 				if(pass) {
 					var validPassword = user.comparePassword(req.body.password);
