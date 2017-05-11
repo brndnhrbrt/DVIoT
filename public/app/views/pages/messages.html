@@ -1,0 +1,47 @@
+<style>
+	.createBtn {
+		margin-top: -20px;
+	}
+	.msgContainer {
+		background-color: #337AB7;
+		color: #ffffff;
+	}
+	.messageBox {
+		margin-top: 30px;
+	}
+	.myLabel {
+		margin-bottom: 75px;
+	}
+	.msg {
+		text-align: left;
+		background-color: #609dd2;;
+		min-height: 100px !important;
+		width: 100% !important;
+	}
+	.msgFrom > h3 {
+		padding: 15px !important;
+	}
+	.msgVal {
+		margin: 10px;
+	}
+</style>
+<div class="jumbotron">
+	<a class="btn btn-primary createBtn pull-left" href="/sendMessage">Send Message</a>
+</div>
+<div class="myLabel" ng-if="msg.messages">
+	<h3 class="pull-left">Messages:</h3>
+</div>
+<div class="jumbotron" ng-if="msg.messages">
+	<div ng-if="msg.message" class="alert alert-warning messageBox" role="alert">
+		{{ msg.message }}
+	</div>
+	<div class="msgContainer" ng-repeat="message in msg.messages">
+		<div class="msgFrom">
+			<h3>{{ message.from }}</h3>
+		</div>
+		<div class="msg">
+			<div class="msgVal msg{{ message.id }}">
+			</div>
+		</div>
+	</div>
+</div>

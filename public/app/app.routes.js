@@ -41,6 +41,11 @@ angular.module('app.routes', ['ngRoute'])
 				controller: 'devController',
 				controllerAs: 'dev'
 			})
+			.when('/getCommand/:id', {
+				templateUrl: '/app/views/pages/getCommand.html',
+				controller: 'mainController',
+				controllerAs: 'com'
+			})
 			.when('/listToken', {
 				templateUrl: '/app/views/pages/token.html',
 				controller: 'mainController',
@@ -65,6 +70,21 @@ angular.module('app.routes', ['ngRoute'])
 				templateUrl: '/app/views/pages/createDevice.html',
 				controller: 'devController',
 				controllerAs: 'dev'
+			})
+			.when('/listUsers', {
+				templateUrl: '/app/views/pages/users.html',
+				controller: 'mainController',
+				controllerAs: 'usr'
+			})
+			.when('/messages', {
+				templateUrl: '/app/views/pages/messages.html',
+				controller: 'msgController',
+				controllerAs: 'msg'
+			})
+			.when('/sendMessage', {
+				templateUrl: '/app/views/pages/sendMessage.html',
+				controller: 'msgController',
+				controllerAs: 'msg'
 			})
 			.when('/private', {
 				templateUrl: 'app/views/pages/private.html'

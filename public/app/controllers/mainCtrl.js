@@ -1,5 +1,5 @@
 angular.module('mainCtrl', [])
-	.controller('mainController', function($location, $rootScope, $route, Auth, App) {
+	.controller('mainController', function($location, $rootScope, $routeParams, $route, Auth, App) {
 		var vm = this;
 		vm.loggedIn = Auth.isLoggedIn();
 
@@ -29,8 +29,80 @@ angular.module('mainCtrl', [])
 				});
 		};
 
+		vm.getUsers = function() {
+			App.getUsers()
+				.success(function(data) {
+					if(data.success) {
+						vm.users = data.users;
+					}
+				});
+		};
+
+		vm.getCommand = function() {
+			var command = $routeParams.id;
+			App.getCommand(command)
+				.success(function(data) {
+					if(data.success) {
+						vm.command = data.command;
+					}
+				});
+		};
+
 		if($location.path() == "/listToken")
 			vm.getToken();
+
+		if($location.path() == "/listUsers")
+			vm.getUsers();
+
+		if($location.path().split('/')[1] == 'getCommand')
+			vm.getCommand();
+
+	})
+	.controller('msgController', function($location, App) {
+		var vm = this;
+
+		vm.templateMessage = {
+			sendTo: undefined,
+			value: undefined
+		};
+
+		vm.getMessages = function() {
+			vm.processing = true;
+			App.getMessages()
+				.success(function(data) {
+					vm.processing = false;
+					if(data.success) {
+						vm.messages = data.messages;
+						for(i in vm.messages) {
+							replaceMessage('.msg' + vm.messages[i].id, vm.messages[i].value);
+						}
+					} else {
+						vm.message = data.message;
+					}
+				});
+		};
+
+		function replaceMessage(div, value) {
+			setTimeout(function() {
+	            $(div).html(value);
+	        }, 100);
+		}
+
+		vm.sendMessage = function() {
+			vm.processing = true;
+			App.sendMessage(vm.templateMessage.sendTo, vm.templateMessage.value)
+				.success(function(data) {
+					vm.processing = false;
+					if(data.success) {
+						vm.message = data.message;
+					} else {
+						vm.message = data.message;
+					}
+				});
+		};
+
+		if($location.path() == '/messages')
+			vm.getMessages();
 	})
 	.controller('authController', function($location, Auth, AuthToken) {
 		var vm = this;

@@ -120,11 +120,43 @@ module.exports = function(app, express) {
 		}
 	});
 
+	apiRouter.get('/getUsers', function(req, res) {
+		User.find({}, function(err, users) {
+			var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, users, 'No users found.');
+			if(pass) {
+				res.json({
+					success: true,
+					users: users
+				});
+			}
+		});
+	});
+
+	apiRouter.get('/getMessages', function(req, res) {
+		Message.find({ to: req.user.username }, function(err, messages) {
+			var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, messages, 'No messages found.');
+			if(pass) {
+				res.json({
+					success: true,
+					messages: messages
+				});
+			}
+		});
+	});
+
 	apiRouter.post('/sendMessage', function(req, res) {
 		if(req.body.sendTo && req.body.value) {
-
+			var message = new Message();
+			var datetime = new Date();
+			message.id = sh.unique(req.user.username+req.body.sendTo+datetime);
+			message.from = req.user.username;
+			message.to = req.body.sendTo;
+			message.value = req.body.value;
+			message.save(function(err) {
+				apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Message sent.');
+			});
 		} else {
-			apiRouter.sendResponse
+			apiRouter.sendResponse(res, false, 'Please fill out the entire form.');
 		}
 	});
 

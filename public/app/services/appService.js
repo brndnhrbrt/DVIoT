@@ -18,6 +18,10 @@ angular.module('appService', [])
 			return $http.get('/api/getDevices');
 		};
 
+		appFactory.getCommand = function(id) {
+			return $http.get('/api/getCommand/' + id);
+		};
+
 		appFactory.editDevice = function(id, name) {
 			return $http.post('/api/editDevice/' + id, { deviceName: name });
 		};
@@ -28,6 +32,10 @@ angular.module('appService', [])
 
 		appFactory.getToken = function() {
 			return $http.get('/api/getToken');
+		};
+
+		appFactory.getUsers = function() {
+			return $http.get('/api/getUsers');
 		};
 
 		appFactory.getMeasurementData = function(id) {
@@ -68,6 +76,14 @@ angular.module('appService', [])
 
 		appFactory.createLocation = function(name) {
 			return $http.post('/api/createLocation', { name: name });
+		};
+
+		appFactory.getMessages = function() {
+			return $http.get('/api/getMessages');
+		};
+
+		appFactory.sendMessage = function(sendTo, value) {
+			return $http.post('/api/sendMessage', { sendTo: sendTo, value: value });
 		};
 
 		return appFactory;
