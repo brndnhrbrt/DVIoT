@@ -18,8 +18,8 @@ var Device = new Schema({
 		required: true
 	},
 	location: String,
-	measurements: [String],
-	commands: [String]
+	measurements: String,
+	commands: String
 });
 
 module.exports = mongoose.model('Device', Device);

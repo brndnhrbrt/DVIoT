@@ -5,6 +5,9 @@
 	.bolder {
 		font-weight: bold !important;
 	}
+	.btn {
+		min-width: 150px !important;
+	}
 </style>
 <div class="row col-md-6 col-md-offset-3">
 	<div class="jumbotron">
@@ -16,18 +19,13 @@
 				<label>
 					Name
 				</label>
-				<input type="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="dev.devData.name">
+				<input type="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="dev.sendDevice.name">
 				<label>
 					Type
 				</label>
-				<div class="dropdown">
-					<button class="btn btn-success dropdown-toggle myDrop" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-						Type
-						<span class="caret"></span>
-					</button>
-					<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-						<li ng-repeat="type in dev.types"><a href="#">{{ type.name }}</a></li>
-				  </ul>
+				<br>
+				<div class="btn {{ type.color }}" ng-repeat="type in dev.types" ng-click="dev.selectType(type)">
+					{{ type.name }}
 				</div>
 			</div>
 			<button type="submit" class="btn btn-block btn-primary">

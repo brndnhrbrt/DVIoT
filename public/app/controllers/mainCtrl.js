@@ -1,5 +1,5 @@
 angular.module('mainCtrl', [])
-	.controller('mainController', function($location, $rootScope, Auth) {
+	.controller('mainController', function($location, $rootScope, $route, Auth) {
 		var vm = this;
 		vm.loggedIn = Auth.isLoggedIn();
 
@@ -16,7 +16,8 @@ angular.module('mainCtrl', [])
 		vm.doLogout = function() {
 			Auth.logout();
 			vm.user = undefined;
-			$location.path('/');
+			$location.path('/login');
+			$route.reload();
 		};
 	})
 	.controller('authController', function($location, Auth, AuthToken) {
@@ -31,7 +32,7 @@ angular.module('mainCtrl', [])
 						$location.path('/private');
 					} else {
 						if(data.success) {
-							$location.path('/');
+							$location.path('/locations');
 						} else {
 							vm.error = data.message;
 						}
@@ -51,7 +52,7 @@ angular.module('mainCtrl', [])
 								.success(function(data) {
 									vm.processing = false;
 									if(data.success) {
-										$location.path('/');
+										$location.path('/locations');
 									} else {
 										vm.error = data.message;
 									}
@@ -67,14 +68,31 @@ angular.module('mainCtrl', [])
 		var vm = this;
 		vm.locationID = $routeParams.id;
 
-		vm.createDevice = function(id) {
-			if(vm.devData.name && vm.devData.type) {
+		vm.sendDevice = {
+			locID: vm.locationID,
+			name: undefined,
+			type: undefined
+		};
+
+		vm.selectType = function(type) {
+			vm.sendDevice.type = type.id;
+			for(i in vm.types) {
+				if(vm.types[i].id == type.id)
+					vm.types[i].color = 'btn-success';
+				else
+					vm.types[i].color = 'btn-primary';
+			}
+		};
+
+		vm.createDevice = function() {
+			if(vm.sendDevice.name && vm.sendDevice.type && vm.sendDevice.locID) {
 				vm.processing = true;
-				App.getDevices(id, vm.devData.name, vm.devData.type)
+				App.createDevice(vm.sendDevice.locID, vm.sendDevice.name, vm.sendDevice.type)
 					.success(function(data) {
+						console.log('ok');
 						vm.processing = false;
 						if(data.success) {
-							$location.path('/location/' + locationID);
+							$location.path('/location/' + vm.locationID);
 						} else {
 							vm.message = data.message;
 						}
@@ -88,8 +106,10 @@ angular.module('mainCtrl', [])
 			App.getTypes()
 				.success(function(data) {
 					if(data.success) {
-						console.log(data);
 						vm.types = data.types;
+						for(i in vm.types) {
+							vm.types[i].color = 'btn-primary';
+						}
 					} else {
 						vm.message = 'Error: No types found.';
 					}
@@ -105,6 +125,47 @@ angular.module('mainCtrl', [])
 		vm.comCreateOptions = [''];
 		vm.mesValue = '';
 		vm.comValue = '';
+		vm.mesMode = false;
+		vm.comMode = false;
+
+		vm.sendType = {
+			name: undefined,
+			command: undefined,
+			measurement: undefined
+		};
+
+		vm.selectCom = function(command) {
+			vm.sendType.command = command.id;
+			vm.sendType.measurement = undefined;
+			for(i in vm.commands) {
+				if(vm.commands[i].id == command.id)
+					vm.commands[i].color = 'btn-success';
+				else
+					vm.commands[i].color = 'btn-primary';
+			}
+			for(i in vm.measurements) {
+				vm.measurements[i].color = 'btn-primary';
+			}
+		};
+
+		vm.selectMes = function(measurement) {
+			vm.sendType.measurement = measurement.id;
+			vm.sendType.command = undefined;
+			for(i in vm.measurements) {
+				if(vm.measurements[i].id == measurement.id)
+					vm.measurements[i].color = 'btn-success';
+				else
+					vm.measurements[i].color = 'btn-primary';
+			}
+			for(i in vm.commands) {
+				vm.commands[i].color = 'btn-primary';
+			}
+		};
+
+		vm.toggleMode = function(com, mes) {
+			vm.comMode = com;
+			vm.mesMode = mes;
+		};
 
 		vm.checkAdmin = function() {
 			Auth.getUser()
@@ -114,20 +175,25 @@ angular.module('mainCtrl', [])
 						if(vm.user.permissionLevel == 0)
 							vm.isAdmin = true;
 						else
-							$location.path('/');
+							$location.path('/404');
 					}
 				});
 		};
-
-		vm.createType = function(name, commands, measurements) {
-			App.createType(name, commands, measurements)
-				.success(function(data) {
-					if(data.success) {
-						vm.message = data.message;
-					} else {
-						vm.message = data.message;
-					}
-				});
+	
+		vm.createType = function() {
+			if(vm.sendType.name && (vm.sendType.command || vm.sendType.measurement)) {
+				App.createType(vm.sendType.name, vm.sendType.command, vm.sendType.measurement)
+					.success(function(data) {
+						if(data.success) {
+							vm.message = data.message;
+						} else {
+							vm.message = data.message;
+						}
+					});	
+			} else {
+				vm.message = 'Please fill out the whole form.';
+			}
+			
 		};
 
 		vm.createCommand = function() {
@@ -170,6 +236,9 @@ angular.module('mainCtrl', [])
 				.success(function(data) {
 					if(data.success) {
 						vm.measurements = data.measurements;
+						for(i in vm.measurements) {
+							vm.measurements[i].color = 'btn-primary';
+						}
 					} else {
 						vm.message = data.message;
 					}
@@ -178,6 +247,9 @@ angular.module('mainCtrl', [])
 				.success(function(data) {
 					if(data.success) {
 						vm.commands = data.commands;
+						for(i in vm.commands) {
+							vm.commands[i].color = 'btn-primary';
+						}
 					} else {
 						vm.message = data.message;
 					}
@@ -230,8 +302,21 @@ angular.module('mainCtrl', [])
 				});
 		};
 
+		vm.getLocData = function() {
+			App.getLocationData(vm.locationID)
+				.success(function(data) {
+					if(data.success) {
+						vm.location = data.location;
+					} else {
+						vm.message = data.message;
+					}
+				});
+		};
+
 		if(!vm.locationID)
 			vm.getLocations();
-		else
+		else {
+			vm.getLocData();
 			vm.getDevices();
+		}
 	});

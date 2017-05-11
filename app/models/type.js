@@ -6,8 +6,12 @@ var Type = new Schema({
 		type: String,
 		required: true
 	},
-	commands: [String],
-	measurements: [String]
+	id: {
+		type: String,
+		required: true
+	},
+	commands: String,
+	measurements: String
 });
 
 module.exports = mongoose.model('Type', Type);

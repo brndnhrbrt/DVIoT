@@ -119,6 +119,23 @@ module.exports = function(app, express) {
 		}
 	});
 
+	apiRouter.get('/getLocationData/:id', function(req, res) {
+		if(req.params.id) {
+			console.log(req.params.id);
+			Location.findOne({ id: req.params.id }, function(err, location) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, location, 'No location found with that id.');
+				if(pass) {
+					res.json({
+						success: true,
+						location: location
+					});
+				}
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'Please include a location id.');
+		}
+	});
+
 	apiRouter.get('/getLocations', function(req, res) {
 		Location.find({ id: req.user.locationIDs }, function(err, locations) {
 			var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, locations, "You do not have any locations.");
@@ -333,15 +350,13 @@ module.exports = function(app, express) {
 						device.type = req.body.deviceType;
 						device.location = req.body.locationID;
 						device.id = sh.unique(req.user.username+req.body.deviceName+datetime);
-						Type.findOne({ name: req.body.deviceType }, function(err, type) {
+						Type.findOne({ id: req.body.deviceType }, function(err, type) {
 							pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, type, 'Invalid device type.');
 							if(pass) {
-								for(var i in type.commands) {
-									device.commands.push(type.commands[i].id);
-								}
-								for(var i in type.measurements) {
-									device.measurements.push(type.measurements[i].id);
-								}
+								if(type.commands)
+									device.commands = type.commands;
+								if(type.measurements)
+									device.measurements = type.measurements;
 								device.save(function(err) {
 									apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Device created.');
 								});
@@ -435,11 +450,13 @@ module.exports = function(app, express) {
 	});
 
 	apiRouter.post('/addType', function(req, res) {
-		if(req.body.name && req.body.commands && req.body.measurements) {
+		if(req.body.name && (req.body.commands || req.body.measurements)) {
 			var type = new Type();
+			var datetime = new Date();
 			type.name = req.body.name;
 			type.commands = req.body.commands;
 			type.measurements = req.body.measurements;
+			type.id = sh.unique(req.user.username+req.body.name+datetime);
 			type.save(function(err) {
 				apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Type created.');
 			});

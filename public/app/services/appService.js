@@ -6,12 +6,16 @@ angular.module('appService', [])
 			return $http.get('/api/getLocations');
 		};
 
+		appFactory.getLocationData = function(id) {
+			return $http.get('/api/getLocationData/' + id);
+		};
+
 		appFactory.getDevices = function(id) {
 			return $http.get('/api/getDevices/' + id);
 		};
 
 		appFactory.createDevice = function(id, name, type) {
-			return $http.post('/api/createDevice', { locationID: id, deviceName: name, deviceType: type });
+			return $http.post('/api/addDevice', { locationID: id, deviceName: name, deviceType: type });
 		};
 
 		appFactory.createMeasurement = function(name, value, options) {
@@ -24,6 +28,10 @@ angular.module('appService', [])
 
 		appFactory.getTypes = function() {
 			return $http.get('/api/getTypes');
+		};
+
+		appFactory.createType = function(name, command, measurement) {
+			return $http.post('/api/addType', { name: name, commands: [command], measurements: [measurement]});
 		};
 
 		appFactory.getMeasurements = function() {

@@ -17,36 +17,45 @@
 		<h1>
 			Create a Type
 		</h1>
-		<form ng-submit="ty.createLocation()">
+		<div ng-if="ty.message" class="alert alert-warning messageBox" role="alert">
+			{{ ty.message }}
+		</div>
+		<form ng-submit="ty.createType()">
 			<div class="form-group">
-				<label>
-					Select a mode:
-				</label>
-				<div class="btn btn-primary inlineBtn" ng-click="ty.comMode()">
-					Command Mode
-				</div>
-				<div class="btn btn-primary inlineBtn" ng-click="ty.comMode()">
-					Measurement Mode
-				</div>
-				<br>
 				<label>
 					Name
 				</label>
-				<input type="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="ty.locData.name">
+				<input type="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="ty.sendType.name">
+				<br>
 				<label>
-					Commands
+					Select a mode:
 				</label>
-				<div class="btn btn-primary myBtn" ng-repeat="command in ty.commands">
-					<div class="btnName">
-						<h3>{{ command.name }}</h3>
+				<br>
+				<div class="btn btn-primary inlineBtn" ng-click="ty.toggleMode(true, false)">
+					Command Mode
+				</div>
+				<div class="btn btn-primary inlineBtn" ng-click="ty.toggleMode(false, true)">
+					Measurement Mode
+				</div>
+				<br>
+				<div ng-if="ty.comMode">
+					<label>
+						Commands:
+					</label>
+					<div class="btn {{ command.color }} myBtn" ng-repeat="command in ty.commands" ng-click="ty.selectCom(command)">
+						<div class="btnName">
+							<h3>{{ command.name }}</h3>
+						</div>
 					</div>
 				</div>
-				<label>
-					Measurements
-				</label>
-				<div class="btn btn-primary myBtn" ng-repeat="measurement in ty.measurements">
-					<div class="btnName">
-						<h3>{{ measurement.name }}</h3>
+				<div ng-if="ty.mesMode">
+					<label>
+						Measurements:
+					</label>
+					<div class="btn {{ measurement.color }} myBtn" ng-repeat="measurement in ty.measurements" ng-click="ty.selectMes(measurement)">
+						<div class="btnName">
+							<h3>{{ measurement.name }}</h3>
+						</div>
 					</div>
 				</div>
 			</div>

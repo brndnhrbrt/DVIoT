@@ -13,9 +13,6 @@
 	.devBtn > .devName {
 		margin-top: 25px;
 	}
-	.myLabel {
-		margin-bottom: 75px;
-	}
 </style>
 <div class="jumbotron">
 	<a class="btn btn-primary createBtn pull-left" href="/createDevice/{{ loc.locationID }}">Add Device</a>
@@ -24,7 +21,7 @@
 	</div>
 </div>
 <div class="myLabel" ng-if="loc.devices">
-	<h3 class="pull-left">Your Devices:</h3>
+	<h3 class="locLabel">{{ loc.location.name }}</h3>
 </div>
 <div class="jumbotron" ng-if="loc.devices">
 	<div class="btn btn-primary devBtn" ng-repeat="device in loc.devices">
