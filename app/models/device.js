@@ -13,7 +13,11 @@ var Device = new Schema({
 			unique: true
 		}
 	},
-	locations: [String],
+	type: {
+		type: String,
+		required: true
+	},
+	location: String,
 	measurements: [String],
 	commands: [String]
 });

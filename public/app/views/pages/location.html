@@ -1,0 +1,35 @@
+<style>
+	.createBtn {
+		margin-top: -20px;
+	}
+	.messageBox {
+		margin-top: 30px;
+	}
+	.devBtn {
+		height: 100px;
+		width: 100%;
+		margin: 25px;
+	}
+	.devBtn > .devName {
+		margin-top: 25px;
+	}
+	.myLabel {
+		margin-bottom: 75px;
+	}
+</style>
+<div class="jumbotron">
+	<a class="btn btn-primary createBtn pull-left" href="/createDevice/{{ loc.locationID }}">Add Device</a>
+	<div ng-if="loc.message" class="alert alert-warning messageBox" role="alert">
+		{{ loc.message }}
+	</div>
+</div>
+<div class="myLabel" ng-if="loc.devices">
+	<h3 class="pull-left">Your Devices:</h3>
+</div>
+<div class="jumbotron" ng-if="loc.devices">
+	<div class="btn btn-primary devBtn" ng-repeat="device in loc.devices">
+		<div class="devName">
+			<h3>{{ device.name }}</h3>
+		</div>
+	</div>
+</div>

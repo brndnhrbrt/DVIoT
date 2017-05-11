@@ -1,0 +1,55 @@
+<style>
+	.dropdown-container {
+		position: relative;
+	}
+	.dropdown-menu {
+		position: absolute;
+		top: 100%;
+		right: 0;
+		margin-left: -100px;
+	}
+</style>
+<div class="row col-md-6 col-md-offset-3">
+	<div class="jumbotron">
+		<h1>
+			Create a Command
+		</h1>
+		<div ng-if="com.message" class="alert alert-warning comsageBox" role="alert">
+			{{ com.message }}
+		</div>
+		<form ng-submit="com.createCommand()">
+			<div class="form-group">
+				<label>
+					Name
+				</label>
+				<input compe="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="com.createOptionData.name">
+				<label>
+					Options
+				</label>
+				<div class="btn btn-block btn-primary" ng-click="com.addOption()">
+					<span> Add an option </span>
+				</div>
+				<div ng-repeat="(i, option) in com.comCreateOptions track by $index">
+					<br>
+					<label> Option {{ i + 1 }} </label>
+					<div class="form-group">
+						<input compe="text" class="form-control my-form" ng-model="com.comCreateOptions[i]">
+					</div>
+				</div>
+				<label>
+					Current State
+				</label>
+				<input compe="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="com.createOptionData.value">
+			</div>
+			<button type="submit" class="btn btn-block btn-primary">
+				<span ng-if="!loc.processing">
+					Create
+				</span>
+				<span ng-if="loc.processing" class="spinner">
+					<span class="glyphicon glyphicon-repeat">
+					</span>
+				</span>
+			</button>
+		</form>
+	</div>
+</div>

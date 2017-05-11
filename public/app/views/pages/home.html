@@ -1,0 +1,13 @@
+<div class="jumbotron">
+	<h1>Welcome to DVIoT</h1>
+	<div ng-if="!root.loggedIn">
+		<a href="/login" class="btn btn-primary">
+			Login
+		</a>
+	</div>
+	<div ng-if="root.loggedIn">
+		<a href="/dashboard" class="btn btn-primary">
+			Dashboard
+		</a>
+	</div>
+</div>

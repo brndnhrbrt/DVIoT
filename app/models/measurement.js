@@ -6,8 +6,9 @@ var Measurement = new Schema({
 		type: String,
 		required: true
 	},
+	options: [String],
 	value: String,
-	devices: [String]
+	id: String
 });
 
 module.exports = mongoose.model('Measurement', Measurement);

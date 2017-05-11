@@ -4,6 +4,10 @@ var sh = require('shorthash');
 var path = require('path');
 var User = require('../models/user');
 var Location = require('../models/location');
+var Device = require('../models/device');
+var Type = require('../models/type');
+var Command = require('../models/command');
+var Measurement = require('../models/measurement');
 var config = require('../../config');
 var secret = config.secret;
 var difficulty = config.difficulty;
@@ -113,6 +117,18 @@ module.exports = function(app, express) {
 				message: 'No token provided'
 			});
 		}
+	});
+
+	apiRouter.get('/getLocations', function(req, res) {
+		Location.find({ id: req.user.locationIDs }, function(err, locations) {
+			var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, locations, "You do not have any locations.");
+			if(pass) {
+				res.json({
+					success: true,
+					locations: locations
+				});
+			}
+		});
 	});
 
 	apiRouter.post('/createLocation', function(req, res) {
@@ -288,6 +304,230 @@ module.exports = function(app, express) {
 		}
 	});
 
+	apiRouter.get('/getDevices/:id', function(req, res) {
+		var locID = req.params.id;
+		if(req.user.locationIDs.indexOf(locID) > -1) {
+			Device.find({ location: locID }, function(err, devices) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, devices, 'No devices found at this location.');
+				if(pass) {
+					res.json({
+						success: true,
+						devices: devices
+					});
+				}
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'You do not have permission to access that Location.');
+		}
+	});
+
+	apiRouter.post('/addDevice', function(req, res) {
+		if(req.body.locationID && req.body.deviceName && req.body.deviceType) {
+			Location.findOne({ id: req.body.locationID }, function(err, location) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, location, 'Location with that id not found.');
+				if(pass) {
+					if(req.user.username == location.createdBy || (location.users.indexOf(req.user.username > -1))) {
+						var device = new Device();
+						var datetime = new Date();
+						device.name = req.body.deviceName;
+						device.type = req.body.deviceType;
+						device.location = req.body.locationID;
+						device.id = sh.unique(req.user.username+req.body.deviceName+datetime);
+						Type.findOne({ name: req.body.deviceType }, function(err, type) {
+							pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, type, 'Invalid device type.');
+							if(pass) {
+								for(var i in type.commands) {
+									device.commands.push(type.commands[i].id);
+								}
+								for(var i in type.measurements) {
+									device.measurements.push(type.measurements[i].id);
+								}
+								device.save(function(err) {
+									apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Device created.');
+								});
+							}
+						});
+						
+					} else {
+						apiRouter.sendResponse(res, false, 'You do not have permission to perform that operation.');
+					}
+				}
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'Please include a location id, device name, and device type.');
+		}
+	});
+
+	apiRouter.get('/getCommands', function(req, res) {
+		if(req.user.permissionLevel == permissionLevelAdmin) {
+			Command.find({}, function(err, commands) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, commands, 'No commands found.');
+				if(pass) {
+					res.json({
+						success: true,
+						commands: commands
+					});
+				}
+			});
+		} else {
+			apiRouter.sendResponse(req, false, 'You do not have permission to view this.');
+		}
+	});
+
+	apiRouter.post('/addCommand', function(req, res) {
+		if(req.body.name && req.body.options && req.body.state) {
+			var command = new Command();
+			var datetime = new Date();
+			command.name = req.body.name;
+			command.options = req.body.options;
+			command.state = req.body.state;
+			command.id = sh.unique(req.user.username+req.body.name+datetime);
+			command.save(function(err) {
+				apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Command created.');
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'Please include a command name, options, and current state.')
+		}
+	});
+
+	apiRouter.get('/getMeasurements', function(req, res) {
+		if(req.user.permissionLevel == permissionLevelAdmin) {
+			Measurement.find({}, function(err, measurements) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, measurements, 'No measurements found.');
+				if(pass) {
+					res.json({
+						success: true,
+						measurements: measurements
+					});
+				}
+			});
+		} else {
+			apiRouter.sendResponse(req, false, 'You do not have permission to view this.');
+		}
+	});
+
+	apiRouter.post('/addMeasurement', function(req, res) {
+		if(req.body.name && req.body.value && req.body.options) {
+			var measurement = new Measurement();
+			var datetime = new Date();
+			measurement.name = req.body.name;
+			measurement.value = req.body.value;
+			measurement.options = req.body.options;
+			measurement.id = sh.unique(req.user.username+req.body.name+datetime);
+			measurement.save(function(err) {
+				apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Measurement created.');
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'Please include a measurement name, options, and current value');
+		}
+	});
+
+	apiRouter.get('/getTypes', function(req, res) {
+		Type.find({}, function(err, types) {
+			var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, types, 'Error: No types found.');
+			if(pass) {
+				res.json({
+					success: true,
+					types: types
+				});
+			}
+		});
+	});
+
+	apiRouter.post('/addType', function(req, res) {
+		if(req.body.name && req.body.commands && req.body.measurements) {
+			var type = new Type();
+			type.name = req.body.name;
+			type.commands = req.body.commands;
+			type.measurements = req.body.measurements;
+			type.save(function(err) {
+				apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Type created.');
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'Please include a type name, commands, and measurements');
+		}
+	});
+
+	apiRouter.post('/sendCommand', function(req, res) {
+		if(req.body.deviceID && req.body.command && req.body.locationID && req.body.commandID) {
+			Location.findOne({ id: req.body.locationID }, function(err, location) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, location, 'Invalid location id.');
+				if(pass) {
+					var hasPermission = false;
+					if((location.devices.indexOf(req.body.deviceID) > -1) && (location.users.indexOf(req.body.username) > -1)) {
+						hasPermission = true;
+					}
+					if(hasPermission || req.user.permissionLevel == permissionLevelAdmin) {
+						Command.findOne({ id: req.body.commandID }, function(err, command) {
+							pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, command, 'Invalid command id.');
+							Device.findOne({ id: req.body.deviceID }, function(err, device) {
+								pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, device, 'Invalid device id.');
+								if(pass) {
+									if(device.commands.indexOf(command.id) > -1) {
+										if(command.options.indexOf(req.body.command) > -1) {
+											command.state = req.body.command;
+											command.save(function(err) {
+												apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Command updated.');
+											});
+										} else {
+											apiRouter.sendResponse(res, false, 'Invalid command option.');
+										}
+									} else {
+										apiRouter.sendResponse(res, false, 'Invalid command.');
+									}
+								}
+							});
+						});
+					} else {
+						apiRouter.sendResponse(res, false, 'You do not have permission to send that command.');
+					}
+				}
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'Please include the device id, the command id, command, and location id.');
+		}
+	});
+
+	apiRouter.post('/sendMeasurement', function(req, res) {
+		if(req.body.deviceID && req.body.measurement && req.body.locationID && req.body.measurementID) {
+			Location.findOne({ id: req.body.locationID }, function(err, location) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, location, 'Invalid location id.');
+				if(pass) {
+					var hasPermission = false;
+					if((location.devices.indexOf(req.body.deviceID) > -1) && (location.users.indexOf(req.body.username) > -1)) {
+						hasPermission = true;
+					}
+					if(hasPermission || req.user.permissionLevel == permissionLevelAdmin) {
+						Measurement.findOne({ id: req.body.measurementID }, function(err, measurement) {
+							pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, measurement, 'Invalid measurement id.');
+							Device.findOne({ id: req.body.deviceID }, function(err, device) {
+								pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, device, 'Invalid device id.');
+								if(pass) {
+									if(device.measurements.indexOf(measurement.id) > -1) {
+										if(measurement.options.indexOf(req.body.measurement) > -1) {
+											measurement.value = req.body.measurement;
+											measurement.save(function(err) {
+												apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Measurement updated.');
+											});
+										} else {
+											apiRouter.sendResponse(res, false, 'Invalid measurement option.');
+										}
+									} else {
+										apiRouter.sendResponse(res, false, 'Invalid measurement.');
+									}
+								}
+							});
+						});
+					} else {
+						apiRouter.sendResponse(res, false, 'You do not have permission to update that measurement.');
+					}
+				}
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'Please include the device id, the measurement id, measurement, and location id.');
+		}
+	});
+
 	apiRouter.get('/me', function(req, res) {
 		req.user.password = undefined;
 		req.user._id = undefined;
@@ -312,6 +552,17 @@ module.exports = function(app, express) {
 			return false;
 		} else {
 			apiRouter.sendResponse(res, true, message);
+			return false;
+		}
+		return true;
+	};
+
+	apiRouter.sendErrorIfErrorOrObjectsNull = function(res, err, object, message) {
+		if(err) {
+			apiRouter.sendResponse(res, false, err);
+			return false;
+		} else if(object.length == 0) {
+			apiRouter.sendResponse(res, false, message);
 			return false;
 		}
 		return true;

@@ -1,0 +1,55 @@
+<style>
+	.dropdown-container {
+		position: relative;
+	}
+	.dropdown-menu {
+		position: absolute;
+		top: 100%;
+		right: 0;
+		margin-left: -100px;
+	}
+</style>
+<div class="row col-md-6 col-md-offset-3">
+	<div class="jumbotron">
+		<h1>
+			Create a Measurement
+		</h1>
+		<div ng-if="mes.message" class="alert alert-warning messageBox" role="alert">
+			{{ mes.message }}
+		</div>
+		<form ng-submit="mes.createMeasurement()">
+			<div class="form-group">
+				<label>
+					Name
+				</label>
+				<input mespe="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="mes.createOptionData.name">
+				<label>
+					Options
+				</label>
+				<div class="btn btn-block btn-primary" ng-click="mes.addOption()">
+					<span> Add an option </span>
+				</div>
+				<div ng-repeat="(i, option) in mes.mesCreateOptions track by $index">
+					<br>
+					<label> Option {{ i + 1 }} </label>
+					<div class="form-group">
+						<input mespe="text" class="form-control my-form" ng-model="mes.mesCreateOptions[i]">
+					</div>
+				</div>
+				<label>
+					Value
+				</label>
+				<input mespe="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="mes.createOptionData.value">
+			</div>
+			<button type="submit" class="btn btn-block btn-primary">
+				<span ng-if="!loc.processing">
+					Create
+				</span>
+				<span ng-if="loc.processing" class="spinner">
+					<span class="glyphicon glyphicon-repeat">
+					</span>
+				</span>
+			</button>
+		</form>
+	</div>
+</div>

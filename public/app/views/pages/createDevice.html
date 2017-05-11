@@ -1,0 +1,44 @@
+<style>
+	.myDrop {
+		width: 100% !important;
+	}
+	.bolder {
+		font-weight: bold !important;
+	}
+</style>
+<div class="row col-md-6 col-md-offset-3">
+	<div class="jumbotron">
+		<h2 class="bolder">
+			Create a Device
+		</h2>
+		<form ng-submit="dev.createDevice()">
+			<div class="form-group">
+				<label>
+					Name
+				</label>
+				<input type="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="dev.devData.name">
+				<label>
+					Type
+				</label>
+				<div class="dropdown">
+					<button class="btn btn-success dropdown-toggle myDrop" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+						Type
+						<span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+						<li ng-repeat="type in dev.types"><a href="#">{{ type.name }}</a></li>
+				  </ul>
+				</div>
+			</div>
+			<button type="submit" class="btn btn-block btn-primary">
+				<span ng-if="!dev.processing">
+					Create
+				</span>
+				<span ng-if="dev.processing" class="spinner">
+					<span class="glyphicon glyphicon-repeat">
+					</span>
+				</span>
+			</button>
+		</form>
+	</div>
+</div>

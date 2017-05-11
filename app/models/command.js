@@ -8,7 +8,7 @@ var Command = new Schema({
 	},
 	options: [String],
 	state: String,
-	devices: [String]
+	id: String
 });
 
 module.exports = mongoose.model('Command', Command);

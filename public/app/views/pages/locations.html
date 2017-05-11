@@ -1,0 +1,36 @@
+<style>
+	.createBtn {
+		margin-top: -20px;
+	}
+	.messageBox {
+		margin-top: 30px;
+	}
+	.locBtn {
+		height: 100px;
+		width: 90%;
+		margin: 25px;
+	}
+	.locBtn > .locName {
+		margin-top: 25px;
+	}
+	.myLabel {
+		margin-bottom: 75px;
+	}
+</style>
+<div class="jumbotron">
+	<a class="btn btn-primary createBtn pull-left" href="/createLocation">Create Location</a>
+	<div ng-if="loc.message" class="alert alert-warning messageBox" role="alert">
+		{{ loc.message }}
+	</div>
+</div>
+<div class="myLabel" ng-if="loc.locations">
+	<h3 class="pull-left">Your Locations:</h3>
+</div>
+<div class="jumbotron" ng-if="loc.locations">
+	<div class="btn btn-primary locBtn" ng-repeat="location in loc.locations" ng-click="loc.goToLocation(location.id)">
+		<div class="locName">
+			<h3>{{ location.name }}</h3>
+			<span class="label label-primary">Devices: {{ location.devices.length }}</span>
+		</div>
+	</div>
+</div>

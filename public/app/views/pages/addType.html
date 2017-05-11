@@ -1,0 +1,64 @@
+<style>
+	.myBtn {
+		width: 90%;
+		margin: 25px;
+	}
+	.myBtn > .btnName {
+		margin-top: -10px;
+	}
+	.inlineBtn {
+		margin-top: 15px;
+		margin-bottom: 25px !important;
+		display: inline-block !important;
+	}
+</style>
+<div class="row col-md-6 col-md-offset-3">
+	<div class="jumbotron">
+		<h1>
+			Create a Type
+		</h1>
+		<form ng-submit="ty.createLocation()">
+			<div class="form-group">
+				<label>
+					Select a mode:
+				</label>
+				<div class="btn btn-primary inlineBtn" ng-click="ty.comMode()">
+					Command Mode
+				</div>
+				<div class="btn btn-primary inlineBtn" ng-click="ty.comMode()">
+					Measurement Mode
+				</div>
+				<br>
+				<label>
+					Name
+				</label>
+				<input type="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="ty.locData.name">
+				<label>
+					Commands
+				</label>
+				<div class="btn btn-primary myBtn" ng-repeat="command in ty.commands">
+					<div class="btnName">
+						<h3>{{ command.name }}</h3>
+					</div>
+				</div>
+				<label>
+					Measurements
+				</label>
+				<div class="btn btn-primary myBtn" ng-repeat="measurement in ty.measurements">
+					<div class="btnName">
+						<h3>{{ measurement.name }}</h3>
+					</div>
+				</div>
+			</div>
+			<button type="submit" class="btn btn-block btn-primary">
+				<span ng-if="!ty.processing">
+					Create
+				</span>
+				<span ng-if="ty.processing" class="spinner">
+					<span class="glyphicon glyphicon-repeat">
+					</span>
+				</span>
+			</button>
+		</form>
+	</div>
+</div>
