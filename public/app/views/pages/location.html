@@ -1,17 +1,55 @@
 <style>
+	.jumbotron {
+		text-align: center !important;
+	}
 	.createBtn {
 		margin-top: -20px;
 	}
 	.messageBox {
 		margin-top: 30px;
 	}
+	.device {
+		margin-bottom: 0px !important;
+	}
 	.devBtn {
-		height: 100px;
-		width: 100%;
-		margin: 25px;
+		color: #ffffff;
+		height: 50px;
+		margin-top: 25px;
+		margin-right: 0px;
+		background-color: #337AB7;
+		border-radius: 5px;
 	}
 	.devBtn > .devName {
 		margin-top: 25px;
+	}
+	.devMes {
+		color: #ffffff;
+		background-color: #609dd2;
+		border-radius: 5px;
+	}
+	.devCom {
+		color: #ffffff;
+		background-color: #609dd2;
+		border-radius: 5px;
+	}
+	.option {
+		margin-bottom: 20px;
+	}
+	.comLabel {
+		margin-top: 15px;
+		margin-bottom: 15px;
+	}
+	.devNameText {
+		margin-top: 10px;
+		font-size: 18px;
+	}
+	.mes {
+		margin-top: -20px;
+		height: 35px;
+		background-color: #5CB85C;
+	}
+	.mesLabel {
+		margin-top: 5px;
 	}
 </style>
 <div class="jumbotron">
@@ -24,9 +62,34 @@
 	<h3 class="locLabel">{{ loc.location.name }}</h3>
 </div>
 <div class="jumbotron" ng-if="loc.devices">
-	<div class="btn btn-primary devBtn" ng-repeat="device in loc.devices">
-		<div class="devName">
-			<h3>{{ device.name }}</h3>
+	<div class="" ng-repeat="device in loc.devices">
+		<div class="devBtn">
+			<div class="devName">
+				<label class="devNameText dev{{ device.id }}">
+				</label>
+			</div>
+		</div>
+		<div class="devMes" ng-if="device.completeMeasurement">
+			<label class="comLabel">
+				{{ device.completeMeasurement.name }}
+			</label>
+			<br>
+			<div class="option" ng-repeat="option in device.completeMeasurement.options">
+				<div class="mes" ng-if="option == device.completeMeasurement.value">
+					<label class="mesLabel">
+						{{ option }}
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="devCom" ng-if="device.completeCommand">
+			<label class="comLabel">
+				{{ device.completeCommand.name }}
+			</label>
+			<br>
+			<div class="btn {{ loc.comOptionColor(device.id, option) }} option" ng-repeat="option in device.completeCommand.options" ng-click="loc.sendCommand(device.id, option, loc.location.id, device.completeCommand.id)">
+				{{ option }}
+			</div>
 		</div>
 	</div>
 </div>

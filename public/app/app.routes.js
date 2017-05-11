@@ -31,6 +31,21 @@ angular.module('app.routes', ['ngRoute'])
 				controller: 'adminController',
 				controllerAs: 'mes'
 			})
+			.when('/listDevices', {
+				templateUrl: '/app/views/pages/devices.html',
+				controller: 'devController',
+				controllerAs: 'dev'
+			})
+			.when('/editDevice/:devID', {
+				templateUrl: '/app/views/pages/editDevice.html',
+				controller: 'devController',
+				controllerAs: 'dev'
+			})
+			.when('/listToken', {
+				templateUrl: '/app/views/pages/token.html',
+				controller: 'mainController',
+				controllerAs: 'tok'
+			})
 			.when('/addCommand', {
 				templateUrl: '/app/views/pages/createCommand.html',
 				controller: 'adminController',

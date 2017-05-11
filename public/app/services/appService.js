@@ -10,8 +10,28 @@ angular.module('appService', [])
 			return $http.get('/api/getLocationData/' + id);
 		};
 
-		appFactory.getDevices = function(id) {
-			return $http.get('/api/getDevices/' + id);
+		appFactory.getDevice = function(id) {
+			return $http.get('/api/getDevice/' + id);
+		};
+
+		appFactory.getDevices = function() {
+			return $http.get('/api/getDevices');
+		};
+
+		appFactory.editDevice = function(id, name) {
+			return $http.post('/api/editDevice/' + id, { deviceName: name });
+		};
+
+		appFactory.getCommandData = function(id) {
+			return $http.get('/api/getCommand/' + id);
+		};
+
+		appFactory.getToken = function() {
+			return $http.get('/api/getToken');
+		};
+
+		appFactory.getMeasurementData = function(id) {
+			return $http.get('/api/getMeasurement/' + id);
 		};
 
 		appFactory.createDevice = function(id, name, type) {
@@ -31,7 +51,7 @@ angular.module('appService', [])
 		};
 
 		appFactory.createType = function(name, command, measurement) {
-			return $http.post('/api/addType', { name: name, commands: [command], measurements: [measurement]});
+			return $http.post('/api/addType', { name: name, commands: command, measurements: measurement });
 		};
 
 		appFactory.getMeasurements = function() {
@@ -40,6 +60,10 @@ angular.module('appService', [])
 
 		appFactory.getCommands = function() {
 			return $http.get('/api/getCommands');
+		};
+
+		appFactory.sendCommand = function(devID, option, locID, comID) {
+			return $http.post('/api/sendCommand', { deviceID: devID, command: option, locationID: locID, commandID: comID });
 		};
 
 		appFactory.createLocation = function(name) {

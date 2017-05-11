@@ -22,6 +22,12 @@
 				</label>
 				<input type="password" class="form-control" ng-model="register.registerData.rePassword">
 			</div>
+			<div class="form-group hidden">
+				<label>
+					Permission Level
+				</label>
+				<input type="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="register.registerData.permissionLevel" ng-init="register.registerData.permissionLevel=1">
+			</div>
 			<div class="alert alert-danger" ng-if="register.error">
 				{{ register.error }}
 			</div>

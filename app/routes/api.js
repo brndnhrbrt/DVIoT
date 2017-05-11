@@ -8,6 +8,7 @@ var Device = require('../models/device');
 var Type = require('../models/type');
 var Command = require('../models/command');
 var Measurement = require('../models/measurement');
+var Message = require('../models/message');
 var config = require('../../config');
 var secret = config.secret;
 var difficulty = config.difficulty;
@@ -119,9 +120,24 @@ module.exports = function(app, express) {
 		}
 	});
 
+	apiRouter.post('/sendMessage', function(req, res) {
+		if(req.body.sendTo && req.body.value) {
+
+		} else {
+			apiRouter.sendResponse
+		}
+	});
+
+	apiRouter.get('/getToken', function(req, res) {
+		var token = req.body.token || req.query.token || req.headers['x-access-token'];
+		res.json({
+			success: true,
+			token: token
+		});
+	});
+
 	apiRouter.get('/getLocationData/:id', function(req, res) {
 		if(req.params.id) {
-			console.log(req.params.id);
 			Location.findOne({ id: req.params.id }, function(err, location) {
 				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, location, 'No location found with that id.');
 				if(pass) {
@@ -137,15 +153,27 @@ module.exports = function(app, express) {
 	});
 
 	apiRouter.get('/getLocations', function(req, res) {
-		Location.find({ id: req.user.locationIDs }, function(err, locations) {
-			var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, locations, "You do not have any locations.");
-			if(pass) {
-				res.json({
-					success: true,
-					locations: locations
-				});
-			}
-		});
+		if(req.user.permissionLevel == permissionLevelAdmin) {
+			Location.find({}, function(err, locations) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, locations, "You do not have any locations.");
+				if(pass) {
+					res.json({
+						success: true,
+						locations: locations
+					});
+				}
+			});
+		} else {
+			Location.find({ id: req.user.locationIDs }, function(err, locations) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, locations, "You do not have any locations.");
+				if(pass) {
+					res.json({
+						success: true,
+						locations: locations
+					});
+				}
+			});
+		}
 	});
 
 	apiRouter.post('/createLocation', function(req, res) {
@@ -321,9 +349,21 @@ module.exports = function(app, express) {
 		}
 	});
 
-	apiRouter.get('/getDevices/:id', function(req, res) {
+	apiRouter.get('/getDevices', function(res, res) {
+		Device.find({}, function(err, devices) {
+			var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, devices, 'No devices found.');
+			if(pass) {
+				res.json({
+					success: true,
+					devices: devices
+				});
+			}
+		});
+	});
+
+	apiRouter.get('/getDevice/:id', function(req, res) {
 		var locID = req.params.id;
-		if(req.user.locationIDs.indexOf(locID) > -1) {
+		if(req.user.locationIDs.indexOf(locID) > -1 || req.user.permissionLevel == permissionLevelAdmin) {
 			Device.find({ location: locID }, function(err, devices) {
 				var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, devices, 'No devices found at this location.');
 				if(pass) {
@@ -335,6 +375,22 @@ module.exports = function(app, express) {
 			});
 		} else {
 			apiRouter.sendResponse(res, false, 'You do not have permission to access that Location.');
+		}
+	});
+
+	apiRouter.post('/editDevice/:id', function(req, res) {
+		if(req.body.deviceName && req.params.id) {
+			Device.findOne({ id: req.params.id }, function(err, device) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, device, 'No device found.');
+				if(pass) {
+					device.name = req.body.deviceName;
+					device.save(function(err) {
+						apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Device updated.');
+					});
+				}
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'Please fill out entire form.');
 		}
 	});
 
@@ -353,13 +409,59 @@ module.exports = function(app, express) {
 						Type.findOne({ id: req.body.deviceType }, function(err, type) {
 							pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, type, 'Invalid device type.');
 							if(pass) {
-								if(type.commands)
-									device.commands = type.commands;
-								if(type.measurements)
-									device.measurements = type.measurements;
-								device.save(function(err) {
-									apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Device created.');
-								});
+								if(type.commands) {
+									Command.findOne({ id: type.commands }, function(err, command) {
+										pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, command, 'No command with that id found.');
+										if(pass) {
+											var newCommand = new Command();
+											newCommand.name = command.name;
+											newCommand.options = command.options;
+											newCommand.state = command.state;
+											newCommand.id = sh.unique(req.user.username+command.id+datetime);
+											newCommand.save(function(err) {
+												pass = apiRouter.sendErrorIfError(res, err);
+												if (pass) {
+													device.commands = newCommand.id;
+													device.save(function(err) {
+													pass = apiRouter.sendErrorIfError(res, err);
+													if(pass) {
+														location.devices.push(device.id);
+														location.save(function(err) {
+															apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Device created.');
+														});
+													}
+												});
+												}
+											});
+										}
+									});
+								} else if(type.measurements) {
+									Measurement.findOne({ id: type.measurements }, function(err, measurement) {
+										pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, measurement, 'No measurement with that id found.');
+										if(pass) {
+											var newMeasurement = new Measurement();
+											newMeasurement.name = measurement.name;
+											newMeasurement.options = measurement.options;
+											newMeasurement.value = measurement.value;
+											newMeasurement.id = sh.unique(req.user.username+measurement.id+datetime);
+											newMeasurement.save(function(err) {
+												pass = apiRouter.sendErrorIfError(res, err);
+												if (pass) {
+													device.measurements = newMeasurement.id;
+													device.save(function(err) {
+													pass = apiRouter.sendErrorIfError(res, err);
+													if(pass) {
+														location.devices.push(device.id);
+														location.save(function(err) {
+															apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Device created.');
+														});
+													}
+												});
+												}
+											});
+										}
+									});
+								}
 							}
 						});
 						
@@ -370,6 +472,38 @@ module.exports = function(app, express) {
 			});
 		} else {
 			apiRouter.sendResponse(res, false, 'Please include a location id, device name, and device type.');
+		}
+	});
+
+	apiRouter.get('/getCommand/:id', function(req, res) {
+		if(req.params.id) {
+			Command.findOne({ id: req.params.id }, function(err, command) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, command, 'No command with that id found.');
+				if(pass) {
+					res.json({
+						success: true,
+						command: command
+					});
+				}
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'Please include a command id.');
+		}
+	});
+
+	apiRouter.get('/getMeasurement/:id', function(req, res) {
+		if(req.params.id) {
+			Measurement.findOne({ id: req.params.id }, function(err, measurement) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, measurement, 'No command with that id found.');
+				if(pass) {
+					res.json({
+						success: true,
+						measurement: measurement
+					});
+				}
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'Please include a measurement id.');
 		}
 	});
 
@@ -454,8 +588,13 @@ module.exports = function(app, express) {
 			var type = new Type();
 			var datetime = new Date();
 			type.name = req.body.name;
-			type.commands = req.body.commands;
-			type.measurements = req.body.measurements;
+			if(req.body.commands) {
+				type.commands = req.body.commands;
+				type.measurements = undefined;
+			} else {
+				type.measurements = req.body.measurements;
+				type.commands = undefined;
+			}
 			type.id = sh.unique(req.user.username+req.body.name+datetime);
 			type.save(function(err) {
 				apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'Type created.');

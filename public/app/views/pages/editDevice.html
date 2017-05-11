@@ -13,28 +13,21 @@
 <div class="row col-md-6 col-md-offset-3">
 	<div class="jumbotron">
 		<h2 class="bolder">
-			Create a Device
+			Edit a Device
 		</h2>
 		<div ng-if="dev.message" class="alert alert-warning messageBox" role="alert">
 			{{ dev.message }}
 		</div>
-		<form ng-submit="dev.createDevice()">
+		<form ng-submit="dev.editDevice()">
 			<div class="form-group">
 				<label>
 					Name
 				</label>
 				<input type="text" autocorrect="off" autocapitalize="none" class="form-control" ng-model="dev.sendDevice.name">
-				<label>
-					Type
-				</label>
-				<br>
-				<div class="btn {{ type.color }}" ng-repeat="type in dev.types" ng-click="dev.selectType(type)">
-					{{ type.name }}
-				</div>
 			</div>
 			<button type="submit" class="btn btn-block btn-primary">
 				<span ng-if="!dev.processing">
-					Create
+					Edit
 				</span>
 				<span ng-if="dev.processing" class="spinner">
 					<span class="glyphicon glyphicon-repeat">

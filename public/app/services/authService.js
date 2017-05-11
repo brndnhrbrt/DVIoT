@@ -17,10 +17,11 @@ angular.module('authService', [])
 			AuthToken.setToken();
 		};
 
-		authFactory.registerUser = function(username, password) {
+		authFactory.registerUser = function(username, password, permissionLevel) {
 			return $http.post('/api/registerUser', {
 				username: username,
-				password: password
+				password: password,
+				permissionLevel: permissionLevel
 			});
 		};
 

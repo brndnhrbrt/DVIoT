@@ -8,6 +8,9 @@
 		<h2 class="bolder">
 			Create a Location
 		</h2>
+		<div ng-if="loc.message" class="alert alert-warning messageBox" role="alert">
+			{{ loc.message }}
+		</div>
 		<form ng-submit="loc.createLocation()">
 			<div class="form-group">
 				<label>

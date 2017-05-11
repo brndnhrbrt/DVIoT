@@ -1,5 +1,5 @@
 angular.module('mainCtrl', [])
-	.controller('mainController', function($location, $rootScope, $route, Auth) {
+	.controller('mainController', function($location, $rootScope, $route, Auth, App) {
 		var vm = this;
 		vm.loggedIn = Auth.isLoggedIn();
 
@@ -19,6 +19,18 @@ angular.module('mainCtrl', [])
 			$location.path('/login');
 			$route.reload();
 		};
+
+		vm.getToken = function() {
+			App.getToken()
+				.success(function(data) {
+					if(data.success) {
+						vm.token = data.token;
+					}
+				});
+		};
+
+		if($location.path() == "/listToken")
+			vm.getToken();
 	})
 	.controller('authController', function($location, Auth, AuthToken) {
 		var vm = this;
@@ -42,31 +54,36 @@ angular.module('mainCtrl', [])
 
 		vm.doRegister = function() {
 			vm.processing = true;
-			if(vm.registerData.password != vm.registerData.rePassword) {
-				vm.error = 'Passwords must match.';
+			if(vm.registerData.username && vm.registerData.password && vm.registerData.rePassword && vm.registerData.permissionLevel) {
+				if(vm.registerData.password != vm.registerData.rePassword) {
+					vm.error = 'Passwords must match.';
+				} else {
+					Auth.registerUser(vm.registerData.username, vm.registerData.password, vm.registerData.permissionLevel)
+						.success(function(data) {
+							if(data.success) {
+								Auth.login(vm.registerData.username, vm.registerData.password)
+									.success(function(data) {
+										vm.processing = false;
+										if(data.success) {
+											$location.path('/locations');
+										} else {
+											vm.error = data.message;
+										}
+									});
+							} else {
+								vm.error = data.message;
+							}
+						});
+				}
 			} else {
-				Auth.registerUser(vm.registerData.username, vm.registerData.password)
-					.success(function(data) {
-						if(data.success) {
-							Auth.login(vm.registerData.username, vm.registerData.password)
-								.success(function(data) {
-									vm.processing = false;
-									if(data.success) {
-										$location.path('/locations');
-									} else {
-										vm.error = data.message;
-									}
-								});
-						} else {
-							vm.error = data.message;
-						}
-					});
+				vm.error = 'Please fill out the entire form.';
 			}
 		};
 	})
 	.controller('devController', function($location, $routeParams, App) {
 		var vm = this;
 		vm.locationID = $routeParams.id;
+		vm.devID = $routeParams.devID;
 
 		vm.sendDevice = {
 			locID: vm.locationID,
@@ -84,12 +101,45 @@ angular.module('mainCtrl', [])
 			}
 		};
 
+		vm.getDevices = function() {
+			App.getDevices()
+				.success(function(data) {
+					if(data.success) {
+						vm.devices = data.devices;
+						if($location.path().split('/')[1] == 'editDevice') {
+							for(i in vm.devices) {
+								if(vm.devices[i].id == vm.devID)
+									vm.sendDevice.name = vm.devices[i].name;
+							}
+						}
+					} else {
+						vm.devices = {};
+					}
+				});
+		};
+
+		vm.editDevice = function() {
+			if(vm.sendDevice.name) {
+				vm.processing = true;
+				App.editDevice(vm.devID, vm.sendDevice.name)
+					.success(function(data) {
+						vm.processing = false;
+						if(data.success) {
+							vm.message = data.message;
+						} else {
+							vm.message = data.message;
+						}
+					});
+			} else {
+				vm.message = 'Please complete the form.';
+			}
+		};
+
 		vm.createDevice = function() {
 			if(vm.sendDevice.name && vm.sendDevice.type && vm.sendDevice.locID) {
 				vm.processing = true;
 				App.createDevice(vm.sendDevice.locID, vm.sendDevice.name, vm.sendDevice.type)
 					.success(function(data) {
-						console.log('ok');
 						vm.processing = false;
 						if(data.success) {
 							$location.path('/location/' + vm.locationID);
@@ -117,6 +167,8 @@ angular.module('mainCtrl', [])
 		};
 
 		vm.getTypes();
+		if($location.path() == '/listDevices' || $location.path().split('/')[1] == 'editDevice')
+			vm.getDevices();
 
 	})
 	.controller('adminController', function($location, $routeParams, App, Auth) {
@@ -179,7 +231,7 @@ angular.module('mainCtrl', [])
 					}
 				});
 		};
-	
+
 		vm.createType = function() {
 			if(vm.sendType.name && (vm.sendType.command || vm.sendType.measurement)) {
 				App.createType(vm.sendType.name, vm.sendType.command, vm.sendType.measurement)
@@ -239,8 +291,6 @@ angular.module('mainCtrl', [])
 						for(i in vm.measurements) {
 							vm.measurements[i].color = 'btn-primary';
 						}
-					} else {
-						vm.message = data.message;
 					}
 				});
 			App.getCommands()
@@ -250,8 +300,6 @@ angular.module('mainCtrl', [])
 						for(i in vm.commands) {
 							vm.commands[i].color = 'btn-primary';
 						}
-					} else {
-						vm.message = data.message;
 					}
 				});
 		};
@@ -259,7 +307,7 @@ angular.module('mainCtrl', [])
 		vm.getMeasurementsAndCommands();
 
 	})
-	.controller('locController', function($location, $routeParams, App) {
+	.controller('locController', function($location, $routeParams, $compile, $scope, App) {
 		var vm = this;
 		vm.locationID = $routeParams.id;
 
@@ -280,11 +328,36 @@ angular.module('mainCtrl', [])
 			}
 		};
 
-		vm.getDevices = function() {
-			App.getDevices(vm.locationID)
+		vm.sendCommand = function(devID, option, locID, comID) {
+			App.sendCommand(devID, option, locID, comID)
+				.success(function(data) {
+					if(data.success) {
+						vm.getCommandData(devID, comID);
+					} else {
+						vm.message = data.message;
+					}
+				});
+		};
+
+		function replaceName(div, name) {
+			setTimeout(function() {
+	            $(div).html(name);
+	        }, 100);
+		}
+
+		vm.getDevice = function() {
+			App.getDevice(vm.locationID)
 				.success(function(data) {
 					if(data.success) {
 						vm.devices = data.devices;
+						for(i in vm.devices) {
+							replaceName('.dev' + vm.devices[i].id, vm.devices[i].name);
+							if(vm.devices[i].commands) {
+								vm.getCommandData(vm.devices[i].id, vm.devices[i].commands);
+							} else if(vm.devices[i].measurements) {
+								vm.getMeasurementData(vm.devices[i].id, vm.devices[i].measurements);
+							}
+						}
 					} else {
 						vm.message = data.message;
 					}
@@ -296,6 +369,63 @@ angular.module('mainCtrl', [])
 				.success(function(data) {
 					if(data.success) {
 						vm.locations = data.locations;
+					} else {
+						vm.message = data.message;
+					}
+				});
+		};
+
+		vm.mesOptionColor = function(deviceID, option) {
+			for(i in vm.devices) {
+				if(vm.devices[i].id == deviceID) {
+					if(option == vm.devices[i].completeMeasurement.value)
+						return 'btn-success';
+					else
+						return 'btn-primary';
+				} 
+			}
+		};
+
+		vm.comOptionColor = function(deviceID, option) {
+			for(i in vm.devices) {
+				if(vm.devices[i].id == deviceID) {
+					if(option == vm.devices[i].completeCommand.state)
+						return 'btn-success';
+					else
+						return 'btn-primary';
+				} 
+			}
+		};
+
+		vm.getMeasurementData = function(deviceID, measurementID) {
+			App.getMeasurementData(measurementID)
+				.success(function(data) {
+					if(data.success) {
+						for(i in vm.devices) {
+							if(vm.devices[i].id == deviceID)
+								vm.devices[i].completeMeasurement = data.measurement;
+						}
+					} else {
+						vm.message = data.message;
+					}
+				});
+		};
+
+		vm.getCommandData = function(deviceID, commandID) {
+			App.getCommandData(commandID)
+				.success(function(data) {
+					if(data.success) {
+						for(i in vm.devices) {
+							if(vm.devices[i].id == deviceID) {
+								for(j in data.command.options) {
+									if(data.command.options[j] == data.command.state)
+										data.command.options[j].color = 'btn-success';
+									else
+										data.command.options[j].color = 'btn-primary';
+								}
+								vm.devices[i].completeCommand = data.command;
+							}
+						}
 					} else {
 						vm.message = data.message;
 					}
@@ -317,6 +447,6 @@ angular.module('mainCtrl', [])
 			vm.getLocations();
 		else {
 			vm.getLocData();
-			vm.getDevices();
+			vm.getDevice();
 		}
 	});
