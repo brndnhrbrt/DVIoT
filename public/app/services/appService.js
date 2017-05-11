@@ -6,8 +6,20 @@ angular.module('appService', [])
 			return $http.get('/api/getLocations');
 		};
 
+		appFactory.getAllLocations = function() {
+			return $http.get('/api/getAllLocations');
+		}
+
 		appFactory.getLocationData = function(id) {
 			return $http.get('/api/getLocationData/' + id);
+		};
+
+		appFactory.assignUserToLocation = function(locationID, username) {
+			return $http.post('/api/assignLocation', { id: locationID, username: username});
+		};
+
+		appFactory.removeUserFromLocation = function(locationID, username) {
+			return $http.post('/api/removeUserFromLocation', { id: locationID, username: username });
 		};
 
 		appFactory.getDevice = function(id) {
@@ -28,6 +40,10 @@ angular.module('appService', [])
 
 		appFactory.getCommandData = function(id) {
 			return $http.get('/api/getCommand/' + id);
+		};
+
+		appFactory.toggleActiveUser = function(id) {
+			return $http.get('/api/toggleActiveUser/' + id);
 		};
 
 		appFactory.getToken = function() {

@@ -71,6 +71,11 @@ angular.module('app.routes', ['ngRoute'])
 				controller: 'devController',
 				controllerAs: 'dev'
 			})
+			.when('/manageUsers', {
+				templateUrl: '/app/views/pages/manageUsers.html',
+				controller: 'mainController',
+				controllerAs: 'usr'
+			})
 			.when('/listUsers', {
 				templateUrl: '/app/views/pages/users.html',
 				controller: 'mainController',

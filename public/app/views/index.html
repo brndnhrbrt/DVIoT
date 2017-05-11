@@ -68,7 +68,11 @@
 	<div id="mySidenav" class="sidenav">
 		<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
 	  	<a ng-if="main.loggedIn" href="/locations" onclick="closeNav()">Locations</a>
+	  	<a ng-if="main.loggedIn && main.user.permissionLevel == 0" href="/manageUsers" onclick="closeNav()">Manage Users</a>
 	  	<a ng-if="main.loggedIn" href="/messages" onclick="closeNav()">Messages</a>
+	  	<a ng-if="main.loggedIn && main.user.permissionLevel == 0" href="/addType" onclick="closeNav()">Add Type</a>
+	  	<a ng-if="main.loggedIn && main.user.permissionLevel == 0" href="/addCommand" onclick="closeNav()">Create Command</a>
+	  	<a ng-if="main.loggedIn && main.user.permissionLevel == 0" href="/addMeasurement" onclick="closeNav()">Create Measurement</a>
 	  	<a ng-if="!main.loggedIn" href="/login" onclick="closeNav()" ng-click="main.doLogout()">Login</a>
 	  	<a ng-if="!main.loggedIn" href="/register" onclick="closeNav()" ng-click="main.doLogout()">Register</a>
 	  	<a ng-if="main.loggedIn" href="#" onclick="closeNav()" ng-click="main.doLogout()">Logout of {{ main.user.username }}</a>

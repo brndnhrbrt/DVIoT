@@ -19,7 +19,11 @@ var UserSchema = new Schema({
 		type: Number,
 		required: true
 	},
-	locationIDs: [String]
+	locationIDs: [String],
+	isActive: {
+		type: Boolean,
+		required: true
+	}
 });
 
 UserSchema.pre('save', function(next) {

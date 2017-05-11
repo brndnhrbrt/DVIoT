@@ -29,11 +29,82 @@ angular.module('mainCtrl', [])
 				});
 		};
 
+		vm.getLocations = function() {
+			App.getAllLocations()
+				.success(function(data) {
+					if(data.success) {
+						vm.locations = data.locations;
+					} else {
+						vm.message = data.message;
+					}
+				});
+		};
+
 		vm.getUsers = function() {
 			App.getUsers()
 				.success(function(data) {
 					if(data.success) {
 						vm.users = data.users;
+					}
+				});
+		};
+
+		vm.userHasLocationWithId = function(user, location) {
+			for(i in vm.users) {
+				if(vm.users[i].username == user) {
+					if(vm.users[i].locationIDs.indexOf(location) > -1)
+						return true;
+				}
+			}
+			return false;
+		};
+
+		vm.getLocationName = function(id) {
+			for(i in vm.locations) {
+				if(vm.locations[i].id == id)
+					return vm.locations[i].name;
+			}
+		};
+
+		vm.editUserActive = function(userID) {
+			console.log('clicked');
+			for(i in vm.users) {
+				if(vm.users[i].username == userID) {
+					var user = vm.users[i];
+					App.toggleActiveUser(userID)
+						.success(function(data) {
+							if(data.success) {
+								vm.message = data.message;
+							} else {
+								vm.message = data.message;
+							}
+						});
+				}
+			}
+		};
+
+		vm.addUserToLocation = function(username, locID) {
+			App.assignUserToLocation(locID, username)
+				.success(function(data) {
+					if(data.success) {
+						vm.message = data.message;
+						vm.getUsers();
+						vm.getLocations();
+					} else {
+						vm.message = data.message;
+					}
+				});
+		};
+
+		vm.removeUserFromLocation = function(username, locID) {
+			App.removeUserFromLocation(locID, username)
+				.success(function(data) {
+					if(data.success) {
+						vm.message = data.message;
+						vm.getUsers();
+						vm.getLocations();
+					} else {
+						vm.message = data.message;
 					}
 				});
 		};
@@ -48,14 +119,17 @@ angular.module('mainCtrl', [])
 				});
 		};
 
-		if($location.path() == "/listToken")
+		if($location.path() == '/listToken')
 			vm.getToken();
 
-		if($location.path() == "/listUsers")
+		if($location.path() == '/listUsers' || $location.path() == '/manageUsers')
 			vm.getUsers();
 
 		if($location.path().split('/')[1] == 'getCommand')
 			vm.getCommand();
+
+		if($location.path() == '/manageUsers')
+			vm.getLocations();
 
 	})
 	.controller('msgController', function($location, App) {

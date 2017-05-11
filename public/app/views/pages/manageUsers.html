@@ -1,0 +1,67 @@
+<style>
+	.createBtn {
+		margin-top: -20px;
+	}
+	.msgContainer {
+		background-color: #337AB7;
+		border-radius: 5px;
+		color: #ffffff;
+	}
+	.messageBox {
+		margin-top: 30px;
+	}
+	.myLabel {
+		margin-bottom: 75px;
+	}
+	.userName > h3 {
+		padding: 15px !important;
+	}
+	.activateBtn {
+		margin-bottom: 15px;
+	}
+	.none {
+		visibility: hidden;
+	}
+	.locationContainer {
+		padding-bottom: 15px !important;
+	}
+	.btn {
+		min-width: 150px !important;
+	}
+</style>
+<div class="jumbotron none">
+	<a class="btn btn-primary createBtn pull-left" href="#">Pointless Button</a>
+</div>
+<div class="myLabel" ng-if="usr.users">
+	<h3 class="pull-left">Users:</h3>
+</div>
+<div class="jumbotron" ng-if="usr.users">
+	<div ng-if="usr.message" class="alert alert-warning messageBox" role="alert">
+		{{ usr.message }}
+	</div>
+	<div class="msgContainer" ng-repeat="user in usr.users">
+		<div class="userName">
+			<h3>{{ user.username }}</h3>
+		</div>
+		<div class="btn btn-success activateBtn" ng-if="!user.isActive" ng-click="usr.editUserActive(user.username)">
+			Activate
+		</div>
+		<div class="btn btn-danger activateBtn" ng-if="user.isActive" ng-click="usr.editUserActive(user.username)">
+			Deactivate
+		</div>
+		<br>
+		<label>Locations:</label>
+		<div class="locationContainer" ng-repeat="location in user.locationIDs">
+			<label class="inline">{{ usr.getLocationName(location) }}</label>
+			<div class="btn btn-danger inline" ng-click="usr.removeUserFromLocation(user.username, location)">
+				Remove
+			</div>
+		</div>
+		<div class="locationContainer" ng-repeat="location in usr.locations" ng-if="!usr.userHasLocationWithId(user.username, location.id)">
+			<label class="inline">{{ location.name }}</label>
+			<div class="btn btn-success inline" ng-click="usr.addUserToLocation(user.username, location.id)">
+				Addd
+			</div>
+		</div>
+	</div>
+</div>

@@ -36,6 +36,7 @@ module.exports = function(app, express) {
 			var user = new User();
 			user.username = req.body.username;
 			user.password = req.body.password;
+			user.isActive = true;
 			if(difficulty == difficultyLevelEasy) {
 				if(req.body.permissionLevel == permissionLevelAdmin || req.body.permissionLevel == permissionLevelUser) {
 					user.permissionLevel = req.body.permissionLevel;
@@ -63,7 +64,7 @@ module.exports = function(app, express) {
 
 	apiRouter.post('/authenticate', function(req, res) {
 		if(req.body.username && req.body.password) {
-			User.findOne({ username: req.body.username }).select('username password').exec(function(err, user) {
+			User.findOne({ username: req.body.username, isActive }).select('username password').exec(function(err, user) {
 				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, user, 'User not found.');
 				if(pass) {
 					var validPassword = user.comparePassword(req.body.password);
@@ -98,7 +99,7 @@ module.exports = function(app, express) {
 						message: 'Failed to authenticate token'
 					});
 				} else if(decoded) {
-					User.findOne({ username: decoded.username }, function(err, user) {
+					User.findOne({ username: decoded.username, isActive: true }, function(err, user) {
 						var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, user, 'User not found in database.');
 						if(pass) {
 							req.user = user;
@@ -208,6 +209,18 @@ module.exports = function(app, express) {
 		}
 	});
 
+	apiRouter.get('/getAllLocations', function(req, res) {
+		Location.find({}, function(err, locations) {
+			var pass = apiRouter.sendErrorIfErrorOrObjectsNull(res, err, locations, "You do not have any locations.");
+			if(pass) {
+				res.json({
+					success: true,
+					locations: locations
+				});
+			}
+		});
+	});
+
 	apiRouter.post('/createLocation', function(req, res) {
 		if(req.body.name) {
 			var location = new Location();
@@ -289,6 +302,22 @@ module.exports = function(app, express) {
 		}
 	});
 
+	apiRouter.get('/toggleActiveUser/:username', function(req, res) {
+		if(req.params.username) {
+			User.findOne({ username: req.params.username }, function(err, user) {
+				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, user, 'User not found.');
+				if(pass) {
+					user.isActive = !user.isActive;
+					user.save(function(err) {
+						apiRouter.sendErrorIfErrorOrSuccessWithMessage(res, err, 'User ' + req.params.username + ' isActive set to ' + user.isActive);
+					});
+				}
+			});
+		} else {
+			apiRouter.sendResponse(res, false, 'Must pass an username.');
+		}
+	});
+
 	apiRouter.post('/assignLocation', function(req, res) {
 		if(req.body.id && req.body.username) {
 			Location.findOne({ id: req.body.id }, function(err, location) {
@@ -327,7 +356,7 @@ module.exports = function(app, express) {
 	apiRouter.post('/removeUserFromLocation', function(req, res) {
 		if(req.body.username && req.body.id) {
 			Location.findOne({ id: req.body.id }, function(err, location) {
-				if(req.user.permissionLevel == permissionLevelAdmin || req.user.username == location.createdBy) {
+				if(req.user.permissionLevel == permissionLevelAdmin || req.user.username == location.createdBy || config.difficulty == difficultyLevelEasy) {
 					var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, location, 'Invalid location id.');
 					if(pass) {
 						User.findOne({ username: req.body.username }, function(err, user) {
@@ -642,7 +671,7 @@ module.exports = function(app, express) {
 				var pass = apiRouter.sendErrorIfErrorOrObjectNull(res, err, location, 'Invalid location id.');
 				if(pass) {
 					var hasPermission = false;
-					if((location.devices.indexOf(req.body.deviceID) > -1) && (location.users.indexOf(req.body.username) > -1)) {
+					if((location.devices.indexOf(req.body.deviceID) > -1) && (location.users.indexOf(req.user.username) > -1)) {
 						hasPermission = true;
 					}
 					if(hasPermission || req.user.permissionLevel == permissionLevelAdmin) {
