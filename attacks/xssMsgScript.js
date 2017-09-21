@@ -1,11 +1,13 @@
 // Dangerous
 
+
+
 <script>
 var token = localStorage.getItem('token');
-var device = '1FFSsC';
-var commandID = 'gfx4R';
-var command = 'Off';
-var locID = 'ZLLLdL';
+var device = '2eLloK';
+var commandID = 'f0Jsy';
+var command = 'Unlock';
+var locID = '1Wgz7g';
 var sendTo = 'b';
 var url = '/api/sendCommand?token=' + token;
 var value = 'Device ' + device + ' sent command: ' + command;
@@ -32,8 +34,6 @@ $.ajax({
 		console.log('Woot woot');
 	});
 });
-
-
 
 
 

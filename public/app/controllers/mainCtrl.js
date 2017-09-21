@@ -67,7 +67,6 @@ angular.module('mainCtrl', [])
 		};
 
 		vm.editUserActive = function(userID) {
-			console.log('clicked');
 			for(i in vm.users) {
 				if(vm.users[i].username == userID) {
 					var user = vm.users[i];
